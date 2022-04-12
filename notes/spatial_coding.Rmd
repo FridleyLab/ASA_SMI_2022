@@ -1,0 +1,46 @@
+---
+title: "ASA SMI"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Create Multiplex ImmunoFlourescent (mif) Object 
+
+spatialTIME functions use a custom `mif` object which can be created 
+using the `create_mif()` function. 
+The `mif` object has 6 slots storing the: 
+
+* Clinical data which must contain:
+  - a column whose column name matches one in the sample dataset.
+* Sample summary data including counts/percentages of each positive cells
+for each single or combination of markers and total number of cells for 
+each core. In order to use `create_mif()` function this table must contain:
+  - a column whose column name matches one in the clinical dataset
+  - a column whose column name matches one in the spatial list.
+* Spatial list (1 per each core):
+  - This object should be a list object where each element of the list
+  corresponds to a core and each element should be a  $n\times p$ 
+  dataframe ($n$ = number of cells)  containing:
+    1. a column name that matches a column name for the sample file 
+    (for merging and potential downstream analysis linking to clinical
+    variables),
+    2. `XMin`, `XMax`, `YMin`, and `YMax` which defines the area that a
+    cell occupies which is eventually used to assign a location for each
+    cell with the x-position being the mean of the `XMin` and `XMax` and
+    y-position being the mean of the `YMin` and `YMax`
+    3. a set of columns that indicate whether a cell is positive to one
+    or multiple markers.
+* patient id:
+  - a column name used to merge clinical and summary data
+* sample_id:
+  - a column name used to merge the spatial and summary data
+* derived:
+  - where all of the plots and spatial clustering measures are stored
+
+
+```{r data_import}
+
+```
