@@ -16,7 +16,7 @@ Some packages that we need to load for analyses like `tidyverse` and `spatialTIM
 packages = c("tidyverse", "spatialTIME", "here")
 #check if packages are installed and if not, install
 install.packages(setdiff(packages, rownames(installed.packages())))
-t = sapply(packages, library)
+t = lapply(packages, require, character.only = T)
 ```
 
 # Importing Data
