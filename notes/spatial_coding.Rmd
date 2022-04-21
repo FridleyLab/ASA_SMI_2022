@@ -7,6 +7,31 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Packages
+
+Some packages that we need to load for analyses like `tidyverse` and `spatialTIME` available from CRAN.
+
+```{r packages}
+#make vector of packages to install and load
+packages = c("tidyverse", "spatialTIME", "here")
+#check if packages are installed and if not, install
+install.packages(setdiff(packages, rownames(installed.packages())))
+t = sapply(packages, library)
+```
+
+# Importing Data
+
+The clinical data, per-cell spatial data, and sample summary data are in the `data/` subdirectory
+
+```{r data_import}
+#read clinical csv
+clinical_data = read.csv(here::here("data/deidentified_clinical.csv"))
+#read summary csv
+sample_summary = read.csv(here::here("data/deidentified_summary.csv"))
+#read spatial list
+spatial_list = load(here::here("data/deidentified_example.RData"))
+```
+
 # Create Multiplex ImmunoFlourescent (mif) Object 
 
 spatialTIME functions use a custom `mif` object which can be created 
@@ -41,6 +66,12 @@ each core. In order to use `create_mif()` function this table must contain:
   - where all of the plots and spatial clustering measures are stored
 
 
-```{r data_import}
+# Creating MIF object
 
-```
+# Finding Cell Markers
+
+CD3..Opal.570..Positive - 0 samples missing
+
+# Visualizing TMA Spots
+
+# 
