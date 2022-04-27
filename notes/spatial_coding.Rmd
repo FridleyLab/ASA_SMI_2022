@@ -25,11 +25,14 @@ The clinical data, per-cell spatial data, and sample summary data are in the `da
 
 ```{r data_import}
 #read clinical csv
-clinical_data = read.csv(here::here("data/deidentified_clinical.csv"))
+clinical_data <- read.csv(here::here("data/deidentified_clinical.csv"))
+head(clinical_data)
 #read summary csv
-sample_summary = read.csv(here::here("data/deidentified_summary.csv"))
+sample_summary <- read.csv(here::here("data/deidentified_summary.csv"), sep="")
+head(sample_summary)
 #read spatial list
-spatial_list = load(here::here("data/deidentified_example.RData"))
+load(here::here("data/deidentified_example.RData"))
+names(example_spatial_small)
 ```
 
 # Create Multiplex ImmunoFlourescent (mif) Object 
@@ -65,13 +68,48 @@ each core. In order to use `create_mif()` function this table must contain:
 * derived:
   - where all of the plots and spatial clustering measures are stored
 
-
 # Creating MIF object
 
-# Finding Cell Markers
+```{r ceate_mif_object}
+# Make sure the variable types are the same for deidentified_id and 
+# deidentified_sample in their corresponding datasets
+x <- spatialTIME::create_mif(clinical_data = clinical_data %>%
+                               mutate(deidentified_id = as.character(deidentified_id)),
+                             sample_data = sample_summary %>%
+                               mutate(deidentified_id = as.character(deidentified_id)),
+                             spatial_list = example_spatial_small,
+                             patient_id = "deidentified_id", sample_id = "deidentified_sample")
 
-CD3..Opal.570..Positive - 0 samples missing
+x #prints a summary of how many patients, samples, and spatial files are present
 
-# Visualizing TMA Spots
+```
 
-# 
+# Visualizing TMAs
+
+```{r mif_plotting}
+names_one <- c("CD3..CD8.","CD3..FOXP3.","CD3..Opal.570..Positive",
+               "CD8..Opal.520..Positive","FOXP3..Opal.620..Positive", 
+               "PDL1..Opal.540..Positive", "PD1..Opal.650..Positive")
+
+names_two <- c("CD3..Opal.570..Positive","CD8..Opal.520..Positive",
+               "FOXP3..Opal.620..Positive","PDL1..Opal.540..Positive",
+               "PD1..Opal.650..Positive","CD3..CD8.","CD3..FOXP3.")
+
+#add an element in the `derived` object position
+x <- spatialTIME::plot_immunoflo(x, plot_title = "deidentified_sample",  
+                                 mnames = names_one, cell_type = "Classifier.Label")
+x[["derived"]][["spatial_plots"]][[4]]
+
+# name order matters 
+x <- spatialTIME::plot_immunoflo(x, plot_title = "deidentified_sample",  
+                                 mnames = names_two, cell_type = "Classifier.Label")
+x[["derived"]][["spatial_plots"]][[4]] +
+  scale_color_manual(breaks = names_two, 
+                     values = viridis::turbo(7),
+                     labels = names_two %>%
+                       gsub("..Opal.*", "+", .) %>% 
+                       gsub("\\.\\.", "+", .) %>% 
+                       gsub("\\.", "+", .))
+  
+```
+
