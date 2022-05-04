@@ -86,6 +86,14 @@ x #prints a summary of how many patients, samples, and spatial files are present
 
 # Visualizing TMAs
 
+A plot of for each sample in the spatial list is created and assigned to the `derived`
+slot in the mif object. If an argument to `filename` is provided then a PDF with one 
+figure per page is created. 
+
+The order of the phenotypes provided matters. When phenotypes are derived by multiple markers, 
+the last provided phenotype will overlap previous phenotypes - so put the marker combinations 
+before the individual markers. 
+
 ```{r mif_plotting}
 names_one <- c("CD3..CD8.","CD3..FOXP3.","CD3..Opal.570..Positive",
                "CD8..Opal.520..Positive","FOXP3..Opal.620..Positive", 
@@ -113,3 +121,11 @@ x[["derived"]][["spatial_plots"]][[4]] +
   
 ```
 
+# Univariate analysis
+
+Ripley's $K$ measures the average number of cells within a specified radius of a cell. 
+Edge corrections are used to account for points outside of the observed region and assume that the 
+distribution of cells is the same inside and outside of the observed region. 
+There are 3 main edge corrections available in spatialTIME - isotropic,
+translational or border. We recommend using either isotropic or translational edge corrections 
+when there are a small number of cells. 
