@@ -4,14 +4,15 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE,
+                      warning = FALSE)
 ```
 
 # Packages
 
 Some packages that we need to load for analyses like `tidyverse` and `spatialTIME` available from CRAN.
 
-```{r packages}
+```{r packages, message=FALSE}
 #make vector of packages to install and load
 packages = c("tidyverse", "spatialTIME", "here")
 #check if packages are installed and if not, install
@@ -94,7 +95,7 @@ The order of the phenotypes provided matters. When phenotypes are derived by mul
 the last provided phenotype will overlap previous phenotypes - so put the marker combinations 
 before the individual markers. 
 
-```{r mif_plotting}
+```{r mif_plotting, warning = FALSE, message = FALSE}
 names_one <- c("CD3..CD8.","CD3..FOXP3.","CD3..Opal.570..Positive",
                "CD8..Opal.520..Positive","FOXP3..Opal.620..Positive", 
                "PDL1..Opal.540..Positive", "PD1..Opal.650..Positive")
@@ -181,6 +182,14 @@ x$derived$univariate_Count  %>%
   
 ```
 
+Positive values for degree of cluster when using `method = 'K'` and `method = 'L'` indicates
+evidence of spatial clustering, while negative values correspond to spatial regularity. 
+
+On the other hand, if using `method = 'M'` then values > 1 correspond to clustering
+and values < 1  correspond to regularity. 
+These values can also be interpreted as the the percent difference from spatial clustering,
+for example if $M=0.5$ that means there is 50% less spatial clustering than expected under CSR.
+
 ## Univariate - nearest neighbor
 
 ```{r NN, warning = FALSE, fig.width = 10, fig.height = 6, fig.align = 'center'}
@@ -200,15 +209,26 @@ x$derived$univariate_NN  %>%
   
 ```
 
+The interpretation of the degree of clustering for $G$ that values > 0 
+indicate spatial clustering of the cell types of interest, while values < 0
+indicate dispersion of these cells.
+
 # Bivariate analysis 
 
 ## Bivariate - count 
+
+In bivariate analysis, we are interested in how many cells of Type 1 (Counted) 
+are clustered in proximity to Type 2 (Anchor). 
+Essentially the radius is centered around a cell of Type 2 and then the cells 
+of Type 1 are counted.
 
 ```{r, fig.width = 10, fig.height = 6, fig.align = 'center'}
 x <- bi_ripleys_k(mif = x, mnames = c("CD3..CD8.", "CD3..FOXP3."), 
                   num_permutations = 10, method = "K",
                   edge_correction = 'translation', r = seq(0,100,10),
                   keep_perm_dis = FALSE, workers = 1, exhaustive = TRUE)
+
+head(x$derived$bivariate_Count)
 
 x$derived$bivariate_Count  %>%
   filter(anchor == 'CD3..FOXP3.') %>%
@@ -217,5 +237,33 @@ x$derived$bivariate_Count  %>%
   theme_bw() + scale_color_manual(values = values)
 ```
 
-## Bivariate - nearest enighbor 
+## Bivariate - nearest neighbor 
 
+```{r fig.width = 10, fig.height = 6, fig.align = 'center'}
+x <- bi_NN_G(mif = x, mnames = c("CD3..CD8.", "CD3..FOXP3."), num_permutations = 10,
+               edge_correction = 'rs', r = seq(0,100,10),
+               keep_perm_dis = FALSE, workers = 1, overwrite = TRUE)
+
+head(x$derived$bivariate_NN)
+
+x$derived$bivariate_NN  %>%
+  filter(anchor == 'CD3..FOXP3.') %>%
+  ggplot(aes(x = r, y = `Degree of Clustering Permutation`)) +
+  geom_line(aes(color = deidentified_sample), show.legend = TRUE) +
+  theme_bw() +  scale_color_manual(values = values)
+```
+
+## Additional analyses
+
+```{r, fig.width = 10, fig.height = 6, fig.align = 'center'}
+x <- ripleys_k(mif = x, mnames = names_two, num_permutations = 10,
+               edge_correction = 'translation', r = c(0,50),
+               keep_perm_dis = FALSE, workers = 1, overwrite = TRUE)
+
+inner_join(x$clinical, x$derived$univariate_Count) %>%
+  filter(grepl('CD3..O|CD8..O', Marker)) %>% 
+  ggplot(aes(x = status, y = `Degree of Clustering Permutation`)) + 
+  geom_point(aes(color = deidentified_sample), show.legend = FALSE) + 
+  facet_wrap(Marker ~., scales = 'free') 
+
+```
